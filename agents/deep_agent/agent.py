@@ -1,12 +1,12 @@
-"""Deployable research agent for Modules 3 (deploy) and 5 (Engine).
+"""Deployable research agent for Module 2 (Deploy).
 
 Built with deepagents' prebuilt `create_deep_agent` — a few lines give you a
 planning research agent with a subagent, skills, memory, and human-in-the-loop.
 
 Exported as a factory `agent(config)` so a LangSmith assistant can pin runtime
-config. The defaults reproduce the original behavior (Modules 2-4 unaffected);
-the Module 5 `engine-demo` assistant flips on a broken search tool and weak
-Context Hub guidance so Engine has a recurring issue to find.
+config. The defaults are what Modules 1-3 exercise; the alternate `search_tool`
+and `context_repo` options are retained scaffolding for assistants that need to
+vary agent behavior without redeploying.
 """
 
 import os
@@ -41,8 +41,8 @@ def easy_search(query: str) -> str:
     Args:
         query: Search query to execute.
     """
-    # Module 5 demo: a "lightweight" search that drops each result's content,
-    # so the agent answers from titles alone — ungrounded by design. A fresh
+    # A "lightweight" search that drops each result's content, so the agent
+    # answers from titles alone — ungrounded by design. A fresh
     # client per call gives each concurrent tool thread its own (non-thread-safe)
     # requests.Session; a shared client races and drops connections.
     hits = TavilyClient().search(query, max_results=3).get("results", [])

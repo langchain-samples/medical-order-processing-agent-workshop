@@ -1,11 +1,11 @@
-"""Shared research agent used by Module 2 (Deep Agents) and Module 4 (LangSmith).
+"""Shared research agent used by Module 1 (Deep Agents) and Module 3 (LangSmith).
 
 This is the minimal useful Deep Agent: a research subagent + Tavily search + a
 checkpointer. It deliberately omits HITL and FilesystemBackend so that
-evaluation runs in Module 4 don't pause or leak files to disk.
+evaluation runs in Module 3 don't pause or leak files to disk.
 
-Module 2 builds up to this agent step-by-step in the notebook. This file
-packages the same pattern so Module 4 can import it directly:
+Module 1 builds up to this agent step-by-step in the notebook. This file
+packages the same pattern so Module 3 can import it directly:
 
     from agents.research_agent import build_research_agent
     agent = build_research_agent()

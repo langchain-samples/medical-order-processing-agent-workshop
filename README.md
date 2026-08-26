@@ -1,8 +1,16 @@
-# Modular Workshops
+# Order Processing Agent Workshop
 
-This repository contains hands-on tutorials for learning LangChain, LangGraph, and Deep Agents.
+Hands-on tutorials for building, deploying, and evaluating an agent with Deep Agents and LangSmith.
 
-This is a condensed version of LangChain Academy, intended to be run in a session with a LangChain engineer. If you're interested in going into more depth, or working through tutorials on your own, check out [LangChain Academy](https://academy.langchain.com/courses/intro-to-langgraph)! LangChain Academy has helpful pre-recorded videos from our LangChain engineers.
+Derived from the [Modular Workshops](https://github.com/langchain-ai/modular-workshops) series — this fork keeps the three modules that take an agent from prototype to production. Intended to be run in a session with a LangChain engineer. For more depth on your own, see [LangChain Academy](https://academy.langchain.com/courses/intro-to-langgraph), which has pre-recorded videos from our engineers.
+
+## Modules
+
+| # | Module | Covers | Time |
+|---|--------|--------|------|
+| 1 | [`01_deep_agents.ipynb`](modules/01_deep_agents.ipynb) | The Deep Agents harness — custom tools, subagents, backends & memory, middleware, HITL, `AGENTS.md` + skills | ~60 min |
+| 2 | [`02_deploy.ipynb`](modules/02_deploy.ipynb) | Ship the agent to LangSmith Deployments with the `langgraph` CLI | ~15 min |
+| 3 | [`03_langsmith.ipynb`](modules/03_langsmith.ipynb) | Prompt engineering (Playground + Prompt Hub), tracing, offline & online evals, annotation queues | ~30 min |
 
 ## Prerequisites
 
@@ -22,10 +30,11 @@ cp .env.example .env
 
 | Key | Required for | Get one |
 |-----|--------------|---------|
-| `OPENAI_API_KEY` | Modules 1-4 (default model) | <https://platform.openai.com> |
-| `LANGSMITH_API_KEY` | Modules 3 & 4 (recommended for all) | <https://smith.langchain.com> |
-| `LANGSMITH_API_KEY_GATEWAY` / `WORKSPACE_ID` | Module 3 §1 (LangSmith Gateway policies) | same key as `LANGSMITH_API_KEY`; workspace ID from LangSmith Settings → Workspace |
-| `TAVILY_API_KEY` | Modules 1 & 3 (web search tool) | <https://tavily.com> |
+| `WORKSHOP_USER` | All modules — your unique attendee slug | pick one, e.g. `jane-doe` |
+| `OPENAI_API_KEY` | Modules 1-3 (default model) | <https://platform.openai.com> |
+| `LANGSMITH_API_KEY` | Modules 2 & 3 (recommended for all) | <https://smith.langchain.com> |
+| `TAVILY_API_KEY` | Modules 1 & 2 (web search tool) | <https://tavily.com> |
+| `LANGSMITH_API_KEY_GATEWAY` | Optional — only if you switch `utils/models.py` to the LLM Gateway block | same key as `LANGSMITH_API_KEY` |
 
 ```bash
 # 3. Start Jupyter
@@ -33,6 +42,21 @@ uv run jupyter notebook
 ```
 
 Open whichever module(s) your recipe calls for.
+
+## Running with Multiple Attendees
+
+Everyone in a session shares one LangSmith workspace, and LangSmith resources are addressed by **name** — so two attendees running the same cell would otherwise overwrite each other's tracing project, hub prompt, eval dataset, deployment, run rules, and annotation queue.
+
+`WORKSHOP_USER` in your `.env` is the per-attendee slug that keeps them apart. Every shared name is wrapped in `scoped()` from [`utils/workshop.py`](utils/workshop.py), which suffixes it with your slug:
+
+```python
+from utils.workshop import scoped
+scoped("modular-workshops-evals")   # -> "modular-workshops-evals-jane-doe"
+```
+
+The modules fail loudly at their setup cell if `WORKSHOP_USER` is unset or still `<first-last>`, rather than silently colliding.
+
+**Use lowercase letters, digits, and hyphens only.** `.env` interpolates the raw value into `LANGSMITH_PROJECT`, while `scoped()` slugifies it — so `"Jane Doe"` would name your tracing project `...-Jane Doe` but your dataset `...-jane-doe`. You'll get a warning if the two diverge.
 
 ## Switching Models
 
@@ -45,7 +69,7 @@ All modules import `model` from `utils/models.py`. Change one line there to swap
 model = init_chat_model("openai:gpt-5.6-terra", use_responses_api=True)
 
 # Anthropic
-# model = init_chat_model("anthropic:claude-sonnet-4-5")
+# model = init_chat_model("anthropic:claude-sonnet-5")
 
 # Azure OpenAI
 # from langchain_openai import AzureChatOpenAI
@@ -56,34 +80,28 @@ model = init_chat_model("openai:gpt-5.6-terra", use_responses_api=True)
 # model = ChatBedrockConverse(provider="anthropic", model_id="...")
 ```
 
-`utils/models.py` also ships a commented-out **LangSmith Gateway** block. Module 3 §1.4 walks through flipping the default to it so every model call (notebooks *and* the deployed agent) is routed through the gateway and subject to workspace policies.
+`utils/models.py` also ships a commented-out **LangSmith LLM Gateway** block. Flip the default to it and every model call — notebooks *and* the deployed agent — routes through the gateway, subject to workspace policies. It reads `LANGSMITH_API_KEY_GATEWAY` (the same key under a non-reserved name, since `langgraph deploy` strips `LANGSMITH_API_KEY` during upload).
 
-## Deploy + Govern (Module 3)
+## Deploy (Module 2)
 
-Module 3 first creates a workspace-level **LangSmith Gateway** policy (PII / secrets redaction), routes the model through the gateway, then deploys the agent at `agents/deep_agent/` to LangSmith via the `langgraph` CLI (installed by `uv sync`). The deploy config is `langgraph.json` at the workshop root.
+Module 2 deploys the agent at `agents/deep_agent/` to LangSmith via the `langgraph` CLI (installed by `uv sync`). The deploy config is `langgraph.json` at the workshop root.
 
-Because `agents/deep_agent/agent.py` imports `model` from `utils.models`, whichever block is active in `utils/models.py` at deploy time is what ships — flip on the gateway block and the deployed agent inherits it with no extra flags.
+Because `agents/deep_agent/agent.py` imports `model` from `utils.models`, whichever block is active in `utils/models.py` at deploy time is what ships — no extra flags.
 
-Your `LANGSMITH_API_KEY` must have deployment permissions (use a `lsv2_sk_...` service key). The gateway block reads `LANGSMITH_API_KEY_GATEWAY` (the same key under a non-reserved name, since `langgraph deploy` strips `LANGSMITH_API_KEY` during upload).
-
-## Engine (Module 5)
-
-Module 5 introduces **LangSmith Engine** — it reads your deployed agent's production traces, clusters recurring failures into issues, diagnoses the root cause against your connected source code, and proposes fixes as GitHub PRs. It runs on the Module 3 deployment, driven through an *assistant* (a saved graph configuration) that swaps in a deliberately broken search tool so Engine has a clear, reproducible issue to find.
-
-Engine's first analysis takes ~20 minutes, so it's best primed before a session. Needs the Module 3 deployment and a `LANGSMITH_API_KEY`.
+Your `LANGSMITH_API_KEY` must have deployment permissions (use a `lsv2_sk_...` service key).
 
 ## Project Structure
 
 ```
-modular-workshops/
+order-processing-agent-workshop/
 ├── README.md                       (this file — recipes + setup)
 ├── pyproject.toml                  (shared dependencies)
 ├── .env.example
 ├── langgraph.json                  (registers agents/deep_agent for langgraph dev)
 ├── utils/
 ├── agents/
-│   ├── research_agent.py           (shared agent factory — Module 1 references, Module 4 imports for eval)
-│   └── deep_agent/                 (deployable + governed agent for Module 3)
+│   ├── research_agent.py           (shared agent factory — Module 1 builds it, Module 3 imports for eval)
+│   └── deep_agent/                 (deployable agent for Module 2)
 │       ├── agent.py
 │       ├── AGENTS.md
 │       └── skills/
@@ -91,10 +109,9 @@ modular-workshops/
 │           └── twitter-post/SKILL.md
 ├── images/                         (diagrams used by the notebooks)
 └── modules/
-    ├── 01_deep_agents.ipynb        (Module 1)
-    ├── 02_langgraph.ipynb          (Module 2)
-    ├── 03_deploy_and_govern.ipynb  (Module 3)
-    └── 04_langsmith.ipynb          (Module 4)
+    ├── 01_deep_agents.ipynb        (Module 1 — Deep Agents)
+    ├── 02_deploy.ipynb             (Module 2 — Deploy)
+    └── 03_langsmith.ipynb          (Module 3 — LangSmith)
 ```
 
 ## Common Issues

@@ -3,10 +3,9 @@
 The notebooks all import `model` from here, so swapping providers
 (OpenAI / Anthropic / Azure / Bedrock) only requires editing this file.
 
-The default is OpenAI, direct, on the Responses API. Module 3 §1.4 walks
-through introducing the LangSmith LLM Gateway as the production-ready
-alternative — to make the switch, comment out the default below and uncomment
-the gateway block.
+The default is OpenAI, direct, on the Responses API. The commented-out
+LangSmith LLM Gateway block is the production-ready alternative — to make the
+switch, comment out the default below and uncomment the gateway block.
 """
 
 import os
@@ -18,7 +17,7 @@ from langchain.chat_models import init_chat_model
 # --- Default: OpenAI, direct ---
 model = init_chat_model("openai:gpt-5.6-terra", use_responses_api=True)
 
-# --- OpenAI via the LangSmith LLM Gateway (Module 3 §1.4) ---
+# --- OpenAI via the LangSmith LLM Gateway ---
 # Routes every model call through the LangSmith Gateway so that workspace
 # policies (PII / secrets / allow-lists / cost caps) are enforced.
 # model = init_chat_model(

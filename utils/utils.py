@@ -1,4 +1,7 @@
-"""Shared helpers used by Module 1 (Chinook demo) and others."""
+"""Shared notebook helpers (graph rendering, env hygiene, Chinook demo DB).
+
+Currently unused by Modules 1-3 — retained as scaffolding for custom modules.
+"""
 
 import os
 import sqlite3
