@@ -1,4 +1,4 @@
-"""Shared research agent used by Module 1 (Deep Agents) and Module 3 (LangSmith).
+"""Shared order operations agent used by Module 1 (Deep Agents) and Module 3 (LangSmith).
 
 This is the minimal useful Deep Agent: a research subagent + Tavily search + a
 checkpointer. It deliberately omits HITL and FilesystemBackend so that
@@ -7,8 +7,8 @@ evaluation runs in Module 3 don't pause or leak files to disk.
 Module 1 builds up to this agent step-by-step in the notebook. This file
 packages the same pattern so Module 3 can import it directly:
 
-    from agents.research_agent import build_research_agent
-    agent = build_research_agent()
+    from agents.order_agent import build_order_agent
+    agent = build_order_agent()
 """
 
 from datetime import datetime
@@ -34,19 +34,23 @@ def tavily_search(query: str) -> str:
     return resilient_tavily_search(query, max_retries=2)
 
 
-def build_research_agent():
-    """Return a fresh research deep agent.
+def build_order_agent():
+    """Return a fresh order operations deep agent.
 
     Each call returns a new agent with a fresh checkpointer — useful so eval
     runs don't share state with each other.
     """
     research_subagent = {
         "name": "research-agent",
-        "description": "Delegate research tasks. Give one topic at a time.",
+        "description": (
+            "Delegate order and payer research tasks. Give one order or payer "
+            "question at a time."
+        ),
         "system_prompt": (
-            f"You are a research assistant. Today is "
+            f"You are an order operations research analyst. Today is "
             f"{datetime.now().strftime('%Y-%m-%d')}.\n"
-            "Use tools to gather information. Limit to 3 search calls."
+            "Use tools to gather payer policy, coding, and authorization "
+            "requirements. Limit to 3 search calls."
         ),
         "tools": [tavily_search],
     }
@@ -55,8 +59,9 @@ def build_research_agent():
         model=model,
         tools=[tavily_search],
         system_prompt=(
-            "You are a helpful research assistant. "
-            "Delegate research to the research-agent."
+            "You are a helpful order operations analyst. "
+            "Delegate payer and coding research to the research-agent. "
+            "State requirements as general guidance, not reimbursement advice."
         ),
         subagents=[research_subagent],
         checkpointer=MemorySaver(),

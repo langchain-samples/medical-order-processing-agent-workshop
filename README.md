@@ -1,6 +1,8 @@
 # Order Processing Agent Workshop
 
-Hands-on tutorials for building, deploying, and evaluating an agent with Deep Agents and LangSmith.
+Hands-on tutorials for building, deploying, and evaluating an **order operations agent** with Deep Agents and LangSmith.
+
+The agent researches payer, coding, and authorization requirements for medical device orders and drafts exception notes the order desk can act on. All order, account, and payer data in these modules is synthetic.
 
 Derived from the [Modular Workshops](https://github.com/langchain-ai/modular-workshops) series — this fork keeps the three modules that take an agent from prototype to production. Intended to be run in a session with a LangChain engineer. For more depth on your own, see [LangChain Academy](https://academy.langchain.com/courses/intro-to-langgraph), which has pre-recorded videos from our engineers.
 
@@ -8,8 +10,8 @@ Derived from the [Modular Workshops](https://github.com/langchain-ai/modular-wor
 
 | # | Module | Covers | Time |
 |---|--------|--------|------|
-| 1 | [`01_deep_agents.ipynb`](modules/01_deep_agents.ipynb) | The Deep Agents harness — custom tools, subagents, backends & memory, middleware, HITL, `AGENTS.md` + skills | ~60 min |
-| 2 | [`02_deploy.ipynb`](modules/02_deploy.ipynb) | Ship the agent to LangSmith Deployments with the `langgraph` CLI | ~15 min |
+| 1 | [`01_deep_agents.ipynb`](modules/01_deep_agents.ipynb) | Build the order operations agent on the Deep Agents harness — custom tools, subagents, backends & memory, middleware, HITL, `AGENTS.md` + skills | ~60 min |
+| 2 | [`02_deploy.ipynb`](modules/02_deploy.ipynb) | Ship that same agent to LangSmith Deployments with the `langgraph` CLI | ~15 min |
 | 3 | [`03_langsmith.ipynb`](modules/03_langsmith.ipynb) | Prompt engineering (Playground + Prompt Hub), tracing, offline & online evals, annotation queues | ~30 min |
 
 ## Prerequisites
@@ -33,7 +35,7 @@ cp .env.example .env
 | `WORKSHOP_USER` | All modules — your unique attendee slug | pick one, e.g. `jane-doe` |
 | `OPENAI_API_KEY` | Modules 1-3 (default model) | <https://platform.openai.com> |
 | `LANGSMITH_API_KEY` | Modules 2 & 3 (recommended for all) | <https://smith.langchain.com> |
-| `TAVILY_API_KEY` | Modules 1 & 2 (web search tool) | <https://tavily.com> |
+| `TAVILY_API_KEY` | Modules 1 & 3 (web search tool) | <https://tavily.com> |
 | `LANGSMITH_API_KEY_GATEWAY` | Optional — only if you switch `utils/models.py` to the LLM Gateway block | same key as `LANGSMITH_API_KEY` |
 
 ```bash
@@ -51,7 +53,7 @@ Everyone in a session shares one LangSmith workspace, and LangSmith resources ar
 
 ```python
 from utils.workshop import scoped
-scoped("modular-workshops-evals")   # -> "modular-workshops-evals-jane-doe"
+scoped("order-agent-evals")   # -> "order-agent-evals-jane-doe"
 ```
 
 The modules fail loudly at their setup cell if `WORKSHOP_USER` is unset or still `<first-last>`, rather than silently colliding.
@@ -80,7 +82,20 @@ model = init_chat_model("openai:gpt-5.6-terra", use_responses_api=True)
 # model = ChatBedrockConverse(provider="anthropic", model_id="...")
 ```
 
-`utils/models.py` also ships a commented-out **LangSmith LLM Gateway** block. Flip the default to it and every model call — notebooks *and* the deployed agent — routes through the gateway, subject to workspace policies. It reads `LANGSMITH_API_KEY_GATEWAY` (the same key under a non-reserved name, since `langgraph deploy` strips `LANGSMITH_API_KEY` during upload).
+### Routing through the LangSmith LLM Gateway
+
+The simplest route needs **no code change** — set these in `.env` and the OpenAI SDK picks them up:
+
+```bash
+OPENAI_API_KEY="<gateway-key>"
+OPENAI_BASE_URL="https://gateway.smith.langchain.com/openai/v1"
+```
+
+The Anthropic equivalent is `ANTHROPIC_BASE_URL="https://gateway.smith.langchain.com/anthropic"`. Both notebooks *and* the deployed agent then route through the gateway, subject to workspace policies.
+
+`utils/models.py` also ships a commented-out gateway block that hardcodes the `base_url` and reads `LANGSMITH_API_KEY_GATEWAY` (the same key under a non-reserved name, since `langgraph deploy` strips `LANGSMITH_API_KEY` during upload). The env-var route above is usually simpler.
+
+The gateway must be enabled for your LangSmith organization, and the key needs the `gateway:invoke` permission — otherwise calls fail with `missing permission gateway:invoke`.
 
 ## Deploy (Module 2)
 
@@ -100,13 +115,13 @@ order-processing-agent-workshop/
 ├── langgraph.json                  (registers agents/deep_agent for langgraph dev)
 ├── utils/
 ├── agents/
-│   ├── research_agent.py           (shared agent factory — Module 1 builds it, Module 3 imports for eval)
+│   ├── order_agent.py              (shared agent factory — Module 1 builds it, Module 3 imports for eval)
 │   └── deep_agent/                 (deployable agent for Module 2)
 │       ├── agent.py
 │       ├── AGENTS.md
 │       └── skills/
-│           ├── linkedin-post/SKILL.md
-│           └── twitter-post/SKILL.md
+│           ├── exception-note/SKILL.md
+│           └── status-update/SKILL.md
 ├── images/                         (diagrams used by the notebooks)
 └── modules/
     ├── 01_deep_agents.ipynb        (Module 1 — Deep Agents)

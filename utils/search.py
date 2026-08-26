@@ -41,78 +41,83 @@ from tavily import TavilyClient
 # --------------------------------------------------------------------------- #
 
 _FALLBACK_RESULTS: list[tuple[tuple[str, ...], list[tuple[str, str, str]]]] = [
-    (("difference between langchain and langgraph", "langchain vs langgraph"), [
+    (("difference between hcpcs and cpt", "hcpcs and cpt", "hcpcs vs cpt"), [
         (
-            "LangChain vs LangGraph — when to use each",
-            "https://docs.langchain.com/oss/python/concepts/products",
-            "LangChain provides the high-level agent and chain abstractions (create_agent, "
-            "tools, middleware) for assembling LLM applications. LangGraph is the lower-level "
-            "runtime that LangChain agents compile to — a stateful graph with nodes, edges, "
-            "checkpointers, and human-in-the-loop interrupts. Use LangChain when you want a "
-            "ReAct-style agent in a few lines; use LangGraph when you need custom state, "
-            "multi-agent topologies, or fine-grained control of the execution loop.",
+            "HCPCS vs CPT codes — what each is used for",
+            "https://www.cms.gov/medicare/coding-billing/healthcare-common-procedure-system",
+            "CPT codes describe procedures and professional services and are maintained by the "
+            "AMA. HCPCS Level II codes describe items, supplies, and non-physician services — "
+            "durable medical equipment, prosthetics, orthotics, and supplies — and are "
+            "maintained by CMS. A device order is typically identified by an HCPCS Level II "
+            "code, while the procedure to place or manage it is billed with a CPT code.",
         ),
     ]),
-    (("create_agent", "create agent"), [
+    (("certificate of medical necessity", "cmn"), [
         (
-            "create_agent — LangChain v1 prebuilt agent",
-            "https://docs.langchain.com/oss/python/langchain/agents",
-            "`create_agent(model, tools, system_prompt, middleware=...)` returns a ReAct-style "
-            "agent as a compiled LangGraph. It handles the model→tool→model loop, accepts "
-            "middleware for cross-cutting concerns (logging, HITL, structured output), and "
-            "can be passed a checkpointer for persistence. Returned object exposes "
-            ".invoke / .stream / .ainvoke and is itself a Runnable.",
+            "Certificate of Medical Necessity (CMN) — purpose and contents",
+            "https://www.cms.gov/medicare/cms-forms/cms-forms",
+            "A Certificate of Medical Necessity documents that a prescribed item meets the "
+            "payer's medical-necessity criteria. It is completed by the treating clinician and "
+            "typically captures the diagnosis, the specific item and HCPCS code, the expected "
+            "length of need, and the clinician's signature and date. Payers may also require "
+            "supporting chart notes; a CMN alone is rarely sufficient.",
         ),
     ]),
-    (("langchain v1", "langchain 1.0"), [
+    (("prior authorization denial", "prior-authorization denial", "authorization denials"), [
         (
-            "LangChain v1.0 release notes",
-            "https://blog.langchain.com/langchain-v1/",
-            "LangChain v1 introduces a redesigned agent API centered on `create_agent` and a "
-            "first-class middleware system for customizing the agent loop. Other highlights: "
-            "consolidated message types in langchain-core, an init_chat_model factory for "
-            "provider-agnostic model loading, and improved structured output support via "
-            "with_structured_output. Built on top of LangGraph for the runtime."
-        ),
-        (
-            "Migrating to LangChain v1",
-            "https://docs.langchain.com/oss/python/releases/langchain-v1",
-            "v1 simplifies the agent surface area: AgentExecutor and the v0 agent constructors "
-            "are replaced by `create_agent`, middleware replaces callbacks for most flows, and "
-            "tool definitions remain compatible with the existing `@tool` decorator."
+            "Common causes of prior authorization denials",
+            "https://www.cms.gov/priorauth",
+            "Denials commonly stem from incomplete documentation, a mismatch between the "
+            "submitted code and the documented diagnosis, missing evidence that the payer's "
+            "step-therapy or medical-necessity criteria were met, submission to the wrong "
+            "benefit channel, or a request filed after the service date. Many denials are "
+            "administrative rather than clinical and are overturned on appeal once the "
+            "supporting record is supplied.",
         ),
     ]),
-    (("langgraph",), [
+    (("prior authorization", "prior-authorization", "preauthorization"), [
         (
-            "LangGraph — stateful, multi-agent workflows",
-            "https://docs.langchain.com/oss/python/langgraph/overview",
-            "LangGraph is an open-source framework for building stateful, multi-agent "
-            "applications with LLMs. You model your workflow as a StateGraph: define a "
-            "TypedDict State, register nodes (Python functions) that read state and return "
-            "updates, and connect them with normal or conditional edges. Built-in support for "
-            "checkpointers (persistence), interrupts (human-in-the-loop), and stores "
-            "(long-term memory)."
+            "Prior authorization — what it is and when it applies",
+            "https://www.cms.gov/priorauth",
+            "Prior authorization is a payer requirement to approve an item or service before "
+            "it is furnished. Requirements are plan-, product-, code-, and benefit-specific: "
+            "the same device can require authorization under one plan and not another, and "
+            "can route through a DME, pharmacy, or home-infusion benefit. Verify the payer's "
+            "current policy and the confirmed HCPCS code before assuming a requirement.",
         ),
     ]),
-    (("langsmith",), [
+    (("durable medical equipment", "dme"), [
         (
-            "LangSmith — observability and evaluation for LLM apps",
-            "https://docs.smith.langchain.com/",
-            "LangSmith is a framework-agnostic platform for tracing, evaluating, and monitoring "
-            "LLM applications. Set LANGSMITH_TRACING=true and every LLM/tool/chain call lands "
-            "in your project. Build datasets, run offline evaluations with `client.evaluate`, "
-            "or configure online evaluators (run rules) that score new traces automatically. "
-            "Annotation queues route flagged runs to human reviewers."
+            "Durable Medical Equipment (DME) in medical billing",
+            "https://www.cms.gov/medicare/coverage/durable-medical-equipment-coverage",
+            "DME refers to equipment that is reusable, primarily serves a medical purpose, and "
+            "is appropriate for use in the home — pumps, wheelchairs, hospital beds, and "
+            "similar items. Coverage is governed by Local Coverage Determinations and "
+            "documentation requirements administered by the DME MACs. Items are identified by "
+            "HCPCS Level II codes, often with rental or purchase modifiers.",
         ),
     ]),
-    (("tavily",), [
+    (("infusion pump", "ambulatory infusion"), [
         (
-            "Tavily — search API for AI agents",
-            "https://tavily.com/",
-            "Tavily is a web search API optimized for AI agents and RAG pipelines. It returns "
-            "ranked search results with extracted content blocks, designed to plug directly "
-            "into LLM prompts. Has a Python SDK (`tavily-python`) with a simple "
-            "TavilyClient.search(query, max_results=N) interface."
+            "External infusion pumps — coverage and documentation",
+            "https://www.cms.gov/medicare-coverage-database",
+            "External ambulatory infusion pumps are covered when the applicable Local Coverage "
+            "Determination criteria are met for the specific drug and indication. "
+            "Documentation generally includes a signed prescriber order, the diagnosis and "
+            "indication, the drug with route, dose and duration, the pump and supply HCPCS "
+            "codes, and supporting clinical records. Requirements differ between reusable "
+            "external pumps and disposable delivery systems.",
+        ),
+    ]),
+    (("hcpcs",), [
+        (
+            "HCPCS Level II codes",
+            "https://www.cms.gov/medicare/coding-billing/healthcare-common-procedure-system",
+            "HCPCS Level II is a standardized code set for products, supplies, and services "
+            "not covered by CPT — most notably durable medical equipment, prosthetics, "
+            "orthotics, and supplies. Codes are alphanumeric (a letter followed by four "
+            "digits) and are frequently paired with modifiers indicating rental, purchase, or "
+            "replacement. CMS updates the set quarterly.",
         ),
     ]),
 ]

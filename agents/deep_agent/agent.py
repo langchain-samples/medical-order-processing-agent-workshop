@@ -1,7 +1,7 @@
-"""Deployable research agent for Module 2 (Deploy).
+"""Deployable order operations agent for Module 2 (Deploy).
 
 Built with deepagents' prebuilt `create_deep_agent` — a few lines give you a
-planning research agent with a subagent, skills, memory, and human-in-the-loop.
+planning order operations agent with a subagent, skills, memory, and human-in-the-loop.
 
 Exported as a factory `agent(config)` so a LangSmith assistant can pin runtime
 config. The defaults are what Modules 1-3 exercise; the alternate `search_tool`
@@ -67,14 +67,15 @@ def agent(config: RunnableConfig | None = None):
     return create_deep_agent(
         model=model,
         tools=[web_search],
-        system_prompt="You are an expert research assistant.",
+        system_prompt="You are an expert order operations analyst.",
         memory=["./AGENTS.md"] + (["/context/AGENTS.md"] if context_repo else []),
         skills=["./skills/"],
         subagents=[{
             "name": "research-agent",
-            "description": "Delegate research tasks. Give one topic at a time.",
-            "system_prompt": "You are a research assistant. Use tools to gather "
-                             "information and cite sources. Limit to 3 search calls.",
+            "description": "Delegate order and payer research tasks. Give one order or payer question at a time.",
+            "system_prompt": "You are an order operations research analyst. Use tools to "
+                             "gather payer policy, coding, and authorization requirements, "
+                             "and cite sources. Limit to 3 search calls.",
             "tools": [web_search],
         }],
         backend=CompositeBackend(
