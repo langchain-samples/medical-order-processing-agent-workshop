@@ -19,9 +19,25 @@ from langchain_core.tools import tool
 from tavily import TavilyClient
 
 from utils.models import model
+from utils.orders import lookup_order
 from utils.search import resilient_tavily_search
 
 AGENT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+@tool(parse_docstring=True)
+def order_lookup(order_id: str) -> str:
+    """Look up the current status and context of a device order by its order ID.
+
+    Use this when a requester asks about the status of an order, references an
+    order number, or wants to know where an order stands. Returns the account,
+    device and HCPCS code, payer, workflow status, any blocker, and the last
+    update date. All order data is synthetic.
+
+    Args:
+        order_id: The order identifier, e.g. "ORD-10432".
+    """
+    return lookup_order(order_id)
 
 
 @tool(parse_docstring=True)
@@ -66,7 +82,7 @@ def agent(config: RunnableConfig | None = None):
 
     return create_deep_agent(
         model=model,
-        tools=[web_search],
+        tools=[web_search, order_lookup],
         system_prompt="You are an expert order operations analyst.",
         memory=["./AGENTS.md"] + (["/context/AGENTS.md"] if context_repo else []),
         skills=["./skills/"],

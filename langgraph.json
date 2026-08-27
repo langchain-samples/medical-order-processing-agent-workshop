@@ -1,8 +1,29 @@
 {
-  "dependencies": ["."],
+  "dependencies": [
+    "."
+  ],
   "graphs": {
     "deep_agent": "./agents/deep_agent/agent.py:agent"
   },
   "env": ".env",
-  "image_distro": "wolfi"
+  "image_distro": "wolfi",
+  "http": {
+    "cors": {
+      "allow_origins": [
+        "http://127.0.0.1:5173",
+        "http://localhost:5173"
+      ],
+      "allow_methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+        "OPTIONS"
+      ],
+      "allow_headers": [
+        "*"
+      ]
+    }
+  }
 }

@@ -15,3 +15,7 @@ credentials.json
 **/.ipynb_checkpoints/
 __pycache__/
 **/__pycache__/
+# React frontend from Module 2 Part 2 — not part of the agent image.
+frontend/
+node_modules/
+**/node_modules/

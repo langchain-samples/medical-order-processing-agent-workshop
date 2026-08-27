@@ -28,5 +28,12 @@ dependencies = [
     "langchain-core>=1.5.3",
 ]
 
+[project.optional-dependencies]
+# Module 3 §3.1a: pull eval datasets from a Databricks Delta table.
+# Install with: uv pip install -e ".[databricks]"  (or: uv pip install databricks-sql-connector)
+databricks = [
+    "databricks-sql-connector>=3.0",
+]
+
 [tool.setuptools]
 packages = ["agents", "utils"]
