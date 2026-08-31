@@ -20,13 +20,13 @@ from langchain.chat_models import init_chat_model
 # --- OpenAI via the LangSmith LLM Gateway ---
 # Routes every model call through the LangSmith Gateway so that workspace
 # policies (PII / secrets / allow-lists / cost caps) are enforced.
-# model = init_chat_model(
-#     model="gpt-5.6-terra",
-#     model_provider="openai",
-#     base_url="https://gateway.smith.langchain.com/openai",
-#     use_responses_api=True,
-#     api_key=os.environ["LANGSMITH_API_KEY_GATEWAY"],
-# )
+model = init_chat_model(
+    model="gpt-5.6-terra",
+    model_provider="openai",
+    base_url="https://gateway.smith.langchain.com/openai",
+    use_responses_api=True,
+    api_key=os.environ["LANGSMITH_API_KEY_GATEWAY"],
+)
 
 # --- Anthropic ---
 # model = init_chat_model("anthropic:claude-sonnet-5")
@@ -36,8 +36,8 @@ from langchain.chat_models import init_chat_model
 # model = AzureChatOpenAI(azure_deployment="gpt-5.6-terra", streaming=True)
 
 # --- AWS Bedrock ---
-from langchain_aws import ChatBedrockConverse
-model = ChatBedrockConverse(
-    provider="anthropic",
-    model_id="anthropic.claude-sonnet-5",
-)
+# from langchain_aws import ChatBedrockConverse
+# model = ChatBedrockConverse(
+#     provider="anthropic",
+#     model_id=os.environ["AWS_MODEL_ARN"],
+# )

@@ -10,6 +10,37 @@ from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 
 
+def trust_system_certs():
+    """Merge the OS certificate store into a local CA bundle so requests/boto3 can
+    verify certs from an internal proxy CA (e.g. corporate LangSmith/Bedrock endpoints).
+
+    `truststore.inject_into_ssl()` does the same job but monkeypatches
+    `ssl.SSLContext` globally, which causes a RecursionError on Windows/macOS
+    (open bug: https://github.com/sethmlarson/truststore/issues/214). This builds
+    a static PEM bundle instead and points the standard CA-bundle env vars at it,
+    so no SSL internals are patched. Safe to call every run; regenerates the
+    bundle file (gitignored via *.pem) from each user's own machine.
+    """
+    if os.name != "nt":
+        return  # Windows-only workaround; other OSes' OpenSSL already trusts the system store.
+
+    import ssl
+    import certifi
+    from pathlib import Path
+
+    bundle_path = Path(__file__).resolve().parent.parent / "system-ca-bundle.pem"
+
+    pem_certs = [Path(certifi.where()).read_text()]
+    for store in ("CA", "ROOT"):
+        for cert_der, encoding, _trust in ssl.enum_certificates(store):
+            if encoding == "x509_asn":
+                pem_certs.append(ssl.DER_cert_to_PEM_cert(cert_der))
+    bundle_path.write_text("\n".join(pem_certs))
+
+    for var in ("SSL_CERT_FILE", "REQUESTS_CA_BUNDLE", "CURL_CA_BUNDLE", "AWS_CA_BUNDLE"):
+        os.environ[var] = str(bundle_path)
+
+
 def clear_local_env_vars():
     """Drop company-gateway env vars that would override our service key for this local demo invocation."""
     for _var in (
